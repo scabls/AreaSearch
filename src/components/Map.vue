@@ -15,9 +15,7 @@ import Fill from 'ol/style/Fill'
 import Stroke from 'ol/style/Stroke'
 import GeoJSON from 'ol/format/GeoJSON'
 
-const { city } = defineProps(['city'])
-
-const cityObj = ref({})
+const { geodata } = defineProps(['geodata'])
 
 const map = new Map({})
 const view = new View({
@@ -42,12 +40,12 @@ roiLayer.setStyle(style)
 map.setView(view)
 map.addLayer(baseLayer)
 map.addLayer(roiLayer)
-const renderMap = cityObj => {
-  //   view.setCenter(cityObj.location.split(',').map(Number))
+const renderMap = geodata => {
+  //   view.setCenter(geodata.location.split(',').map(Number))
   view.animate({
-    center: cityObj.location.split(',').map(Number),
+    center: geodata.location.split(',').map(Number),
   })
-  switch (cityObj.level) {
+  switch (geodata.level) {
     case '国家':
       //   view.setZoom(5)
       view.animate({
@@ -69,17 +67,16 @@ const renderMap = cityObj => {
   }
   const source = new VectorSource({
     url() {
-      return `https://geo.datav.aliyun.com/areas_v3/bound/${cityObj.adcode}.json`
+      return `https://geo.datav.aliyun.com/areas_v3/bound/${geodata.adcode}.json`
     },
     format: new GeoJSON(),
   })
   roiLayer.setSource(source)
 }
 watch(
-  () => city,
-  async () => {
-    cityObj.value = await getAdcode(city).then(res => res.geocodes[0])
-    renderMap(cityObj.value)
+  () => geodata,
+  () => {
+    renderMap(geodata)
   }
 )
 onMounted(() => {

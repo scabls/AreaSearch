@@ -7,7 +7,7 @@
       </form>
       <button @click="resetMap">复位</button>
     </header>
-    <Map :city="weather.city" />
+    <Map :geodata />
     <WeatherInfo :weather />
   </div>
 </template>
@@ -25,12 +25,16 @@ const { adcode } = route.params
 
 const titleCityName = ref('')
 const weather = ref({})
+const geodata = ref({})
 const keyword = ref('')
+
+let initiaGeoData, initiaWeather
 
 const handleSearch = async () => {
   try {
     const res = await getAdcode(keyword.value).then(res => res.geocodes[0])
     if (res.level !== '全国' && res.level !== '省' && res.level !== '市') return
+    geodata.value = res
     try {
       const res2 = await getWeather(res.adcode).then(res => res.lives[0])
       weather.value = res2
@@ -38,15 +42,19 @@ const handleSearch = async () => {
   } catch (error) {}
   keyword.value = ''
 }
-const resetMap = async () => {
-  const res = await getWeather(adcode).then(res => res.lives[0])
-  weather.value = res
+const resetMap = () => {
+  weather.value = initiaWeather
+  geodata.value = initiaGeoData
 }
 
 onMounted(async () => {
-  const res = await getWeather(adcode).then(res => res.lives[0])
-  weather.value = res
-  titleCityName.value = res.city
+  const weatherRes = await getWeather(adcode).then(res => res.lives[0])
+  weather.value = weatherRes
+  initiaWeather = weatherRes
+  titleCityName.value = weatherRes.city
+  const geodataRes = await getAdcode(weatherRes.city).then(res => res.geocodes[0])
+  geodata.value = geodataRes
+  initiaGeoData = geodataRes
 })
 </script>
 
