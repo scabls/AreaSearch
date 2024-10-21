@@ -89,7 +89,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@import '../../node_modules/ol/ol.css';
 #map {
   position: relative;
   height: calc(100% - 4rem);
