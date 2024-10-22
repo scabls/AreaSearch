@@ -120,6 +120,6 @@ onMounted(() => {
 <style lang="scss" scoped>
 #map {
   position: relative;
-  height: calc(100% - 4rem);
+  height: calc(100% - 3rem);
 }
 </style>
