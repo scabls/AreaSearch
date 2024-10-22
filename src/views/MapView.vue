@@ -2,10 +2,10 @@
   <div class="map-view">
     <header class="map-header">
       <router-link to="/" class="local-name">{{ titleAddress }}</router-link>
-      <form @submit.prevent="handleSearch">
-        <input type="text" placeholder="搜索城市" v-model="keyword" />
+      <form @submit.prevent="handleSearch" class="search-form">
+        <input type="text" placeholder="搜索城市" v-model="keyword" class="search-input" />
       </form>
-      <button @click="resetMap">复位</button>
+      <button @click="resetMap" class="reset-btn">复位地图</button>
     </header>
     <Map :geodata />
     <WeatherInfo :weather />
@@ -65,18 +65,27 @@ onMounted(async () => {
   .map-header {
     display: flex;
     gap: 2rem;
-    padding: 1rem;
+    padding: 0.5rem 2rem;
     background-color: #4264fb;
     .local-name {
-      color: #333;
+      color: #fff;
       text-decoration: none;
       align-content: center;
     }
-    form {
-      height: 2rem;
-      input {
+    .search-form {
+      height: 2.5rem;
+      .search-input {
         height: 100%;
+        padding-left: 1rem;
+        border-radius: 0.3rem;
       }
+    }
+    .reset-btn {
+      background-color: #fff;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      border-radius: 0.3rem;
+      cursor: pointer;
     }
   }
 }
