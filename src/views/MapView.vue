@@ -1,7 +1,7 @@
 <template>
   <div class="map-view">
     <header class="map-header">
-      <router-link to="/" class="local-name">{{ titleCityName }}</router-link>
+      <router-link to="/" class="local-name">{{ titleAddress }}</router-link>
       <form @submit.prevent="handleSearch">
         <input type="text" placeholder="搜索城市" v-model="keyword" />
       </form>
@@ -23,7 +23,7 @@ import { getWeather, getAdcode } from '@/api/weather'
 const route = useRoute()
 const { adcode } = route.params
 
-const titleCityName = ref('')
+const titleAddress = ref('')
 const weather = ref({})
 const geodata = ref({})
 const keyword = ref('')
@@ -33,7 +33,7 @@ let initiaGeoData, initiaWeather
 const handleSearch = async () => {
   try {
     const res = await getAdcode(keyword.value).then(res => res.geocodes[0])
-    if (res.level !== '全国' && res.level !== '省' && res.level !== '市') return
+    if (res.level !== '国家' && res.level !== '省' && res.level !== '市') return
     geodata.value = res
     try {
       const res2 = await getWeather(res.adcode).then(res => res.lives[0])
@@ -51,7 +51,7 @@ onMounted(async () => {
   const weatherRes = await getWeather(adcode).then(res => res.lives[0])
   weather.value = weatherRes
   initiaWeather = weatherRes
-  titleCityName.value = weatherRes.city
+  titleAddress.value = weatherRes.city
   const geodataRes = await getAdcode(weatherRes.city).then(res => res.geocodes[0])
   geodata.value = geodataRes
   initiaGeoData = geodataRes

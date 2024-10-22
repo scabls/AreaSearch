@@ -1,26 +1,28 @@
 <template>
   <aside class="info-aside" v-show="weather.city">
     <table>
-      <tr>
-        <td>城市</td>
-        <td>{{ weather.city }}</td>
-      </tr>
-      <tr>
-        <td>天气</td>
-        <td>{{ weather.weather }}</td>
-      </tr>
-      <tr>
-        <td>温度</td>
-        <td>{{ weather.temperature }}°C</td>
-      </tr>
-      <tr>
-        <td>风向</td>
-        <td>{{ weather.winddirection }}</td>
-      </tr>
-      <tr>
-        <td>风力</td>
-        <td>{{ weather.windpower }}</td>
-      </tr>
+      <tbody>
+        <tr>
+          <td>城市</td>
+          <td>{{ weather.city }}</td>
+        </tr>
+        <tr>
+          <td>天气</td>
+          <td>{{ weather.weather }}</td>
+        </tr>
+        <tr>
+          <td>温度</td>
+          <td>{{ weather.temperature }}°C</td>
+        </tr>
+        <tr>
+          <td>风向</td>
+          <td>{{ weather.winddirection }}</td>
+        </tr>
+        <tr>
+          <td>风力</td>
+          <td>{{ weather.windpower }}</td>
+        </tr>
+      </tbody>
     </table>
   </aside>
 </template>
@@ -50,9 +52,11 @@ const { weather } = defineProps({
     width: 200px;
     line-height: 30px;
     border-radius: 15px;
-    tr {
-      td {
-        border: 1px solid rgba(238, 238, 238, 0.473);
+    tbody {
+      tr {
+        td {
+          border: 1px solid rgba(238, 238, 238, 0.473);
+        }
       }
     }
   }

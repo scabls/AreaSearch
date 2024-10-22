@@ -1,11 +1,13 @@
 <template>
   <main id="map"></main>
+  <PopUp v-model="popUpE" :geodata />
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import PopUp from './PopUp.vue'
+import { ref, watch, onMounted, useTemplateRef } from 'vue'
 import { getAdcode } from '@/api/weather'
-import { Map, View } from 'ol'
+import { Map, Overlay, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import { XYZ } from 'ol/source'
 import VectorLayer from 'ol/layer/Vector'
@@ -14,8 +16,17 @@ import Style from 'ol/style/Style'
 import Fill from 'ol/style/Fill'
 import Stroke from 'ol/style/Stroke'
 import GeoJSON from 'ol/format/GeoJSON'
+import Select from 'ol/interaction/Select.js'
+import { pointerMove } from 'ol/events/condition'
 
-const { geodata } = defineProps(['geodata'])
+const { geodata } = defineProps({
+  geodata: {
+    type: Object,
+    required: true,
+  },
+})
+
+const popUpE = ref(null)
 
 const map = new Map({})
 const view = new View({
@@ -35,31 +46,48 @@ const style = new Style({
     color: 'red',
   }),
 })
-const roiLayer = new VectorLayer({})
-roiLayer.setStyle(style)
+const roiLayer = new VectorLayer({
+  style,
+})
+const popUp = new Overlay({})
+const select = new Select({
+  condition: pointerMove,
+})
+
 map.setView(view)
 map.addLayer(baseLayer)
 map.addLayer(roiLayer)
+map.addOverlay(popUp)
+map.addInteraction(select)
+
+select.on('select', function (e) {
+  const feature = e.selected[0]
+  if (feature) {
+    console.log(feature.getProperties())
+    popUp.setPosition(feature.getProperties().center)
+    return
+  } else {
+    popUp.setPosition(undefined)
+  }
+})
+
 const renderMap = geodata => {
-  //   view.setCenter(geodata.location.split(',').map(Number))
+  const center = geodata.location.split(',').map(Number)
   view.animate({
-    center: geodata.location.split(',').map(Number),
+    center,
   })
   switch (geodata.level) {
     case '国家':
-      //   view.setZoom(5)
       view.animate({
-        zoom: 5,
+        zoom: 4,
       })
       break
     case '省':
-      //   view.setZoom(7)
       view.animate({
         zoom: 7,
       })
       break
     case '市':
-      //   view.setZoom(9)
       view.animate({
         zoom: 9,
       })
@@ -82,6 +110,8 @@ watch(
 onMounted(() => {
   // 注意vue设置状态时模板未加载
   map.setTarget('map')
+  // 子组件挂载后获取dom的ref
+  popUp.setElement(popUpE.value)
 })
 </script>
 
