@@ -1,6 +1,6 @@
 <template>
   <main id="map" :style="{ cursor }"></main>
-  <PopUp v-model="popUpE" :geodata />
+  <PopUp v-model="popUpE" :popUpData />
 </template>
 
 <script setup>
@@ -27,6 +27,7 @@ const { geodata } = defineProps({
 })
 
 const popUpE = ref(null)
+const popUpData = ref({})
 const cursor = ref('default')
 
 const map = new Map({})
@@ -64,10 +65,12 @@ map.addInteraction(select)
 select.on('select', function (e) {
   const feature = e.selected[0]
   if (feature) {
-    popUp.setPosition(feature.getProperties().center)
+    popUpData.value = feature.getProperties()
+    popUp.setPosition(popUpData.value.center)
     cursor.value = 'pointer'
     return
   } else {
+    popUpData.value = {}
     popUp.setPosition(undefined)
     cursor.value = 'default'
   }

@@ -1,8 +1,8 @@
 <template>
   <div class="popup" ref="popup">
-    <p>地区名: {{ geodata.formatted_address }}</p>
-    <p>区域等级: {{ geodata.level }}</p>
-    <p>经度{{ coordinate[0] }}</p>
+    <p>地区名: {{ popUpData.name }}</p>
+    <p>区域等级: {{ areaLevel }}</p>
+    <p>经度: {{ coordinate[0] }}</p>
     <p>纬度: {{ coordinate[1] }}</p>
   </div>
 </template>
@@ -11,18 +11,28 @@
 import { useTemplateRef, onMounted, computed } from 'vue'
 
 const popUpE = defineModel()
-const { geodata } = defineProps({
-  geodata: {
+const { popUpData } = defineProps({
+  popUpData: {
     type: Object,
     required: true,
   },
 })
-
 const popUpRef = useTemplateRef('popup')
 
 const coordinate = computed(() => {
-  if (!geodata.location) return []
-  return geodata.location.split(',')
+  if (!popUpData.center) return []
+  return popUpData.center.map(n => n.toFixed(2))
+})
+const areaLevel = computed(() => {
+  if (!popUpData.level) return ''
+  switch (popUpData.level) {
+    case 'country':
+      return '全国'
+    case 'province':
+      return '省级'
+    case 'city':
+      return '市级'
+  }
 })
 
 onMounted(() => {
