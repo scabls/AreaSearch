@@ -7,9 +7,9 @@
 import PopUp from './PopUp.vue'
 import { ref, watch, onMounted, useTemplateRef } from 'vue'
 import { getAdcode } from '@/api/weather'
-import { Map, Overlay, View } from 'ol'
+import { Feature, Map, Overlay, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
-import { XYZ } from 'ol/source'
+import { Cluster, XYZ } from 'ol/source'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import Style from 'ol/style/Style'
@@ -19,18 +19,23 @@ import GeoJSON from 'ol/format/GeoJSON'
 import Select from 'ol/interaction/Select.js'
 import Draw from 'ol/interaction/Draw.js'
 import { pointerMove } from 'ol/events/condition'
+import busIcon from '@/assets/bus.png'
+import chargeIcon from '@/assets/charge.png'
+import parkIcon from '@/assets/park.png'
+import { Point } from 'ol/geom'
+import Icon from 'ol/style/Icon'
+import CircleStyle from 'ol/style/Circle.js'
+import Text from 'ol/style/Text'
 
 let drawer
+const icons = { busIcon, chargeIcon, parkIcon }
 
-const { geodata, drawType } = defineProps({
-  geodata: {
-    type: Object,
-    required: true,
-  },
-  drawType: {
-    type: String,
-    required: true,
-  },
+const canAddMarker = defineModel()
+
+const { geodata, drawType, iconType } = defineProps({
+  geodata: { type: Object, required: true },
+  drawType: { type: String, required: true },
+  iconType: { type: String, required: true },
 })
 
 const popUpE = ref(null)
@@ -63,6 +68,48 @@ const drawLayer = new VectorLayer({
   source: new VectorSource(),
   style,
 })
+const setClusterStyle = feature => {
+  console.log(feature.getProperties())
+  const markerCount = feature.get('features').length // != markerSource.getFeatures().length
+  const style = new Style()
+  if (markerCount === 1) {
+    style.setImage(
+      new Icon({
+        src: feature.get('features')[0].get('icon'),
+      })
+    )
+  } else {
+    style.setImage(
+      new CircleStyle({
+        radius: 15,
+        stroke: new Stroke({
+          color: '#fff',
+        }),
+        fill: new Fill({
+          color: '#3399CC',
+        }),
+      })
+    )
+    style.setText(
+      new Text({
+        text: markerCount.toString(),
+        fill: new Fill({
+          color: '#fff',
+        }),
+      })
+    )
+  }
+  return style
+}
+const markerSource = new VectorSource()
+const markerClusterSource = new Cluster({
+  source: markerSource,
+  distance: 40,
+})
+const markerLayer = new VectorLayer({
+  source: markerClusterSource,
+  style: f => setClusterStyle(f),
+})
 const popUp = new Overlay({})
 const select = new Select({
   condition: pointerMove,
@@ -72,6 +119,7 @@ map.setView(view)
 map.addLayer(baseLayer)
 map.addLayer(roiLayer)
 map.addLayer(drawLayer)
+map.addLayer(markerLayer)
 map.addOverlay(popUp)
 map.addInteraction(select)
 
@@ -93,12 +141,30 @@ view.on('change:resolution', () => {
   const zoom = view.getZoom()
   if (zoom >= 12) {
     layerVisible.value = false
+    canAddMarker.value = true
   } else {
     layerVisible.value = true
+    canAddMarker.value = false
   }
 })
+
+map.on('click', e => {
+  if (!canAddMarker.value) return
+  if (!iconType) return
+  if (iconType === 'stopMark') return
+  if (iconType === 'clearMark') return
+  const coordinate = e.coordinate
+  const marker = new Feature({
+    geometry: new Point(coordinate),
+  })
+  marker.set('icon', icons[iconType + 'Icon'])
+  // marker.setProperties({ icon: icons[iconType + 'Icon'] })
+  markerSource.addFeature(marker)
+})
+
 const renderMap = geodata => {
   drawLayer.getSource().clear()
+  markerSource.clear()
   const center = geodata.location.split(',').map(Number)
   view.animate({
     center,
@@ -164,6 +230,12 @@ watch(layerVisible, () => {
     roiLayer.setVisible(false)
   }
 })
+watch(
+  () => iconType,
+  () => {
+    if (iconType === 'clearMark') markerSource.clear()
+  }
+)
 onMounted(() => {
   // 注意vue设置状态时模板未加载
   map.setTarget('map')

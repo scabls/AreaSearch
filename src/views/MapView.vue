@@ -14,8 +14,21 @@
           :value="item.value"
         />
       </el-select>
+      <el-select
+        v-model="iconType"
+        placeholder="选择标记类型"
+        style="width: 240px"
+        :disabled="!canAddMarker"
+      >
+        <el-option
+          v-for="item in iconTypes"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
     </header>
-    <Map :geodata :drawType />
+    <Map :geodata :drawType :iconType v-model="canAddMarker" />
     <WeatherInfo :weather />
   </div>
 </template>
@@ -27,6 +40,7 @@ import WeatherInfo from '@/components/WeatherInfo.vue'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getWeather, getAdcode } from '@/api/weather'
+import { disable } from 'ol/rotationconstraint'
 
 const route = useRoute()
 const { adcode } = route.params
@@ -36,28 +50,22 @@ const weather = ref({})
 const geodata = ref({})
 const keyword = ref('')
 const drawType = ref('')
+const iconType = ref('')
+const canAddMarker = ref(false)
 const drawTypes = [
-  {
-    value: 'LineString',
-    label: '折线',
-  },
-  {
-    value: 'Circle',
-    label: '圆',
-  },
-  {
-    value: 'Polygon',
-    label: '多边形',
-  },
-  {
-    value: 'stopDraw',
-    label: '退出绘制',
-  },
-  {
-    value: 'clearDraw',
-    label: '清除绘制',
-  },
+  { value: 'LineString', label: '折线' },
+  { value: 'Circle', label: '圆' },
+  { value: 'Polygon', label: '多边形' },
+  { value: 'stopDraw', label: '退出绘制' },
+  { value: 'clearDraw', label: '清除绘制' },
 ]
+const iconTypes = ref([
+  { value: 'bus', label: '公交车站' },
+  { value: 'charge', label: '充电站' },
+  { value: 'park', label: '停车场' },
+  { value: 'stopMark', label: '停止标记' },
+  { value: 'clearMark', label: '清除标记' },
+])
 
 let initiaGeoData, initiaWeather
 
