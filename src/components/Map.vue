@@ -36,6 +36,7 @@ const { geodata, drawType } = defineProps({
 const popUpE = ref(null)
 const popUpData = ref({})
 const cursor = ref('default')
+const layerVisible = ref(true)
 
 const map = new Map({})
 const view = new View({
@@ -88,6 +89,14 @@ select.on('select', function (e) {
   }
 })
 
+view.on('change:resolution', () => {
+  const zoom = view.getZoom()
+  if (zoom >= 12) {
+    layerVisible.value = false
+  } else {
+    layerVisible.value = true
+  }
+})
 const renderMap = geodata => {
   drawLayer.getSource().clear()
   const center = geodata.location.split(',').map(Number)
@@ -146,6 +155,15 @@ watch(
     }
   }
 )
+watch(layerVisible, () => {
+  if (layerVisible.value) {
+    drawLayer.setVisible(true)
+    roiLayer.setVisible(true)
+  } else {
+    drawLayer.setVisible(false)
+    roiLayer.setVisible(false)
+  }
+})
 onMounted(() => {
   // 注意vue设置状态时模板未加载
   map.setTarget('map')
