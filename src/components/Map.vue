@@ -17,11 +17,18 @@ import Fill from 'ol/style/Fill'
 import Stroke from 'ol/style/Stroke'
 import GeoJSON from 'ol/format/GeoJSON'
 import Select from 'ol/interaction/Select.js'
+import Draw from 'ol/interaction/Draw.js'
 import { pointerMove } from 'ol/events/condition'
 
-const { geodata } = defineProps({
+let drawer
+
+const { geodata, drawType } = defineProps({
   geodata: {
     type: Object,
+    required: true,
+  },
+  drawType: {
+    type: String,
     required: true,
   },
 })
@@ -51,6 +58,10 @@ const style = new Style({
 const roiLayer = new VectorLayer({
   style,
 })
+const drawLayer = new VectorLayer({
+  source: new VectorSource(),
+  style,
+})
 const popUp = new Overlay({})
 const select = new Select({
   condition: pointerMove,
@@ -59,6 +70,7 @@ const select = new Select({
 map.setView(view)
 map.addLayer(baseLayer)
 map.addLayer(roiLayer)
+map.addLayer(drawLayer)
 map.addOverlay(popUp)
 map.addInteraction(select)
 
@@ -77,6 +89,7 @@ select.on('select', function (e) {
 })
 
 const renderMap = geodata => {
+  drawLayer.getSource().clear()
   const center = geodata.location.split(',').map(Number)
   view.animate({
     center,
@@ -110,6 +123,27 @@ watch(
   () => geodata,
   () => {
     renderMap(geodata)
+  }
+)
+watch(
+  () => drawType,
+  () => {
+    switch (drawType) {
+      case 'clearDraw':
+        drawLayer.getSource().clear()
+      case 'stopDraw':
+        if (drawer) {
+          drawer.setActive(false)
+        }
+        break
+      default:
+        if (drawer) map.removeInteraction(drawer)
+        drawer = new Draw({
+          type: drawType,
+          source: drawLayer.getSource(),
+        })
+        map.addInteraction(drawer)
+    }
   }
 )
 onMounted(() => {

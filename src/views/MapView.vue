@@ -6,8 +6,16 @@
         <input type="text" placeholder="搜索城市" v-model="keyword" class="search-input" />
       </form>
       <button @click="resetMap" class="reset-btn">复位地图</button>
+      <el-select v-model="drawType" placeholder="选择绘制类型" style="width: 240px">
+        <el-option
+          v-for="item in drawTypes"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
     </header>
-    <Map :geodata />
+    <Map :geodata :drawType />
     <WeatherInfo :weather />
   </div>
 </template>
@@ -27,6 +35,29 @@ const titleAddress = ref('')
 const weather = ref({})
 const geodata = ref({})
 const keyword = ref('')
+const drawType = ref('')
+const drawTypes = [
+  {
+    value: 'LineString',
+    label: '折线',
+  },
+  {
+    value: 'Circle',
+    label: '圆',
+  },
+  {
+    value: 'Polygon',
+    label: '多边形',
+  },
+  {
+    value: 'stopDraw',
+    label: '退出绘制',
+  },
+  {
+    value: 'clearDraw',
+    label: '清除绘制',
+  },
+]
 
 let initiaGeoData, initiaWeather
 
@@ -78,6 +109,7 @@ onMounted(async () => {
         height: 100%;
         padding-left: 1rem;
         border-radius: 0.3rem;
+        color: #a8abb2;
       }
     }
     .reset-btn {
@@ -85,7 +117,14 @@ onMounted(async () => {
       padding-left: 1rem;
       padding-right: 1rem;
       border-radius: 0.3rem;
+      color: #a8abb2;
       cursor: pointer;
+    }
+    .el-select {
+      height: 2.5rem;
+      .el-select__wrapper {
+        height: 100%;
+      }
     }
   }
 }
