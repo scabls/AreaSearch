@@ -69,15 +69,16 @@ const drawLayer = new VectorLayer({
   style,
 })
 const setClusterStyle = feature => {
-  console.log(feature.getProperties())
   const markerCount = feature.get('features').length // != markerSource.getFeatures().length
   const style = new Style()
   if (markerCount === 1) {
-    style.setImage(
-      new Icon({
-        src: feature.get('features')[0].get('icon'),
-      })
-    )
+    // style.setImage(
+    //   // new Icon({
+    //   //   src: feature.get('features')[0].get('icon'),
+    //   // })
+    //   feature.get('features')[0].getStyle().getImage()
+    // )
+    return feature.get('features')[0].getStyle()
   } else {
     style.setImage(
       new CircleStyle({
@@ -157,8 +158,9 @@ map.on('click', e => {
   const marker = new Feature({
     geometry: new Point(coordinate),
   })
-  marker.set('icon', icons[iconType + 'Icon'])
+  // marker.set('icon', icons[iconType + 'Icon'])
   // marker.setProperties({ icon: icons[iconType + 'Icon'] })
+  marker.setStyle(new Style({ image: new Icon({ src: icons[iconType + 'Icon'] }) }))
   markerSource.addFeature(marker)
 })
 
